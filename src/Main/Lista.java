@@ -1,10 +1,6 @@
-package template;
+package Main;
 
 import br.com.davidbuzatto.jsge.core.engine.EngineFrame;
-import br.com.davidbuzatto.jsge.core.utils.CoreUtils;
-import br.com.davidbuzatto.jsge.core.utils.DrawingUtils;
-import br.com.davidbuzatto.jsge.geom.Rectangle;
-import br.com.davidbuzatto.jsge.image.Image;
 
 /**
  * Modelo de projeto básico da JSGE.
@@ -15,13 +11,11 @@ import br.com.davidbuzatto.jsge.image.Image;
  */
 public class Lista extends EngineFrame {
     
-    private Image logo;
-    
     public Lista() {
         
         super(
             800,                 // largura                      / width
-            450,                 // algura                       / height
+            620,                 // algura                       / height
             "Window Title",      // título                       / title
             60,                  // quadros por segundo desejado / target FPS
             true,                // suavização                   / antialiasing

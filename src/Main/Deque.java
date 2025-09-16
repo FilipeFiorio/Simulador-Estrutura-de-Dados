@@ -1,4 +1,4 @@
-package template;
+package Main;
 
 import br.com.davidbuzatto.jsge.core.engine.EngineFrame;
 import br.com.davidbuzatto.jsge.core.utils.CoreUtils;
@@ -13,15 +13,13 @@ import br.com.davidbuzatto.jsge.image.Image;
  * 
  * @author Prof. Dr. David Buzatto
  */
-public class Fila extends EngineFrame {
+public class Deque extends EngineFrame {
     
-    private Image logo;
-    
-    public Fila() {
+    public Deque() {
         
         super(
             800,                 // largura                      / width
-            450,                 // algura                       / height
+            620,                 // algura                       / height
             "Window Title",      // título                       / title
             60,                  // quadros por segundo desejado / target FPS
             true,                // suavização                   / antialiasing
@@ -83,7 +81,7 @@ public class Fila extends EngineFrame {
      * Instantiates the engine and starts it.
      */
     public static void main( String[] args ) {
-        new Fila();
+        new Deque();
     }
     
 }
