@@ -1,12 +1,14 @@
 package Main;
 
 import br.com.davidbuzatto.jsge.core.engine.EngineFrame;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.Color;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
-import javax.swing.text.StyleConstants;
 
 /**
  *
@@ -251,6 +253,9 @@ public class JanelaInicial extends javax.swing.JPanel {
     }
     
     public static void main(String[] args) {
+           
+        FlatMacLightLaf.setup();
+        
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Simulador Estrutura de Dados");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

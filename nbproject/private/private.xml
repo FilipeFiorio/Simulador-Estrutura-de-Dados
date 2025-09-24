@@ -3,11 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/template/JanelaInicial.java</file>
-            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/template/Pilha.java</file>
-            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/template/Fila.java</file>
-            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/template/Lista.java</file>
-            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/template/Deque.java</file>
+            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/Main/JanelaInicial.java</file>
+            <file>file:/home/filipe/Documentos/Estrutura-de-Dados/Simulador-Estrutura-de-Dados/src/Main/Pilha.java</file>
         </group>
     </open-files>
 </project-private>
