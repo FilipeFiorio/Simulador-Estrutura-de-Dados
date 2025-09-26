@@ -1,13 +1,10 @@
 package Main;
 
 import br.com.davidbuzatto.jsge.core.engine.EngineFrame;
-import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.Color;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 /**
@@ -232,7 +229,7 @@ public class JanelaInicial extends javax.swing.JPanel {
     }//GEN-LAST:event_botaoDequeMouseExited
 
     private void botaoDequeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoDequeActionPerformed
-        inicializarSimualcao(new Deque());
+        //inicializarSimualcao(new Deque());
     }//GEN-LAST:event_botaoDequeActionPerformed
 
     private void botaoListaMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_botaoListaMouseEntered
@@ -244,7 +241,7 @@ public class JanelaInicial extends javax.swing.JPanel {
     }//GEN-LAST:event_botaoListaMouseExited
 
     private void botaoListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoListaActionPerformed
-        inicializarSimualcao(new Lista());
+        //inicializarSimualcao(new Lista());
     }//GEN-LAST:event_botaoListaActionPerformed
 
 

@@ -3,7 +3,7 @@ package Main;
 import br.com.davidbuzatto.jsge.core.engine.EngineFrame;
 import br.com.davidbuzatto.jsge.imgui.GuiButton;
 import br.com.davidbuzatto.jsge.imgui.GuiComponent;
-import br.com.davidbuzatto.jsge.imgui.GuiLabel;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,13 +16,14 @@ import java.util.List;
  */
 public class Pilha extends EngineFrame {
 
-    private int tamanho;
+    private int tamanho = 0;
+    private String strTamanho = "Tamanho: " + tamanho;
     private final int LIMITE_PILHA = 10;
     private double timer = 0.0;
     private final double tempoMax = 1.0;
     private boolean mostrarAvisoLimite = false;
     private boolean mostrarAvisoVazio = false;
-    private boolean mostrarLabelExplicacao = false;
+    private boolean mostrarExplicacao = false;
 
     private GuiButton botaoPop;
     private GuiButton botaoPush;
@@ -31,10 +32,9 @@ public class Pilha extends EngineFrame {
     private GuiButton botaoComoFunciona;
     private GuiButton botaoFecharExplicacao;
 
-    private GuiLabel labelTamanho;
+    private Color corFundoEscurecido;
 
-    private List<Peca> pecas;
-    private List<GuiComponent> guiComponentes;
+    private List<GuiComponent> listaBotoes;
 
     public Pilha() {
 
@@ -58,8 +58,7 @@ public class Pilha extends EngineFrame {
 
         useAsDependencyForIMGUI();
 
-        guiComponentes = new ArrayList<>();
-        pecas = new ArrayList<>();
+        listaBotoes = new ArrayList<>();
 
         botaoPush = new GuiButton(570, 200, 150, 40, "PUSH");
         botaoPop = new GuiButton(570, 250, 150, 40, "POP");
@@ -68,25 +67,29 @@ public class Pilha extends EngineFrame {
         botaoComoFunciona = new GuiButton(570, 400, 150, 40, "COMO FUNCIONA?");
         botaoFecharExplicacao = new GuiButton(345, 420, 100, 40, "FECHAR");
 
-        labelTamanho = new GuiLabel(500, 100, 100, 40, "Tamanho: " + String.valueOf(tamanho));
+        corFundoEscurecido = new Color(40, 40, 40, 40);
 
-        guiComponentes.add(botaoPop);
-        guiComponentes.add(botaoPush);
-        guiComponentes.add(botaoLimpar);
-        guiComponentes.add(botaoComoFunciona);
-        guiComponentes.add(botaoSimulacaoRapida);
+        listaBotoes.add(botaoPop);
+        listaBotoes.add(botaoPush);
+        listaBotoes.add(botaoLimpar);
+        listaBotoes.add(botaoComoFunciona);
+        listaBotoes.add(botaoSimulacaoRapida);
 
-        guiComponentes.add(labelTamanho);
     }
 
     @Override
     public void update(double delta) {
 
-        for (GuiComponent g : guiComponentes) {
-            g.update(delta);
+        for (GuiComponent b : listaBotoes) {
+            b.update(delta);
+            b.setTextColor(WHITE);
+            b.setBackgroundColor(new Color(0, 128, 0));
+
         }
 
         botaoFecharExplicacao.update(delta);
+        botaoFecharExplicacao.setBackgroundColor(new Color(0, 128, 0));
+        botaoFecharExplicacao.setTextColor(WHITE);
 
         if (botaoPush.isMousePressed()) {
             push();
@@ -97,29 +100,37 @@ public class Pilha extends EngineFrame {
         }
 
         if (mostrarAvisoLimite) {
+            botaoPush.setEnabled(false);
             timer += delta;
             if (timer >= tempoMax) {
                 mostrarAvisoLimite = false;
+                botaoPush.setEnabled(true);
             }
         }
 
         if (mostrarAvisoVazio) {
+            botaoPop.setEnabled(false);
             timer += delta;
             if (timer >= tempoMax) {
                 mostrarAvisoVazio = false;
+                botaoPop.setEnabled(true);
             }
         }
 
         if (botaoComoFunciona.isMousePressed()) {
             botaoComoFunciona.setEnabled(false);
-            mostrarLabelExplicacao = true;
-            mostrarBotaoFechar = true;
+            mostrarExplicacao = true;
         }
 
         if (botaoFecharExplicacao.isMousePressed()) {
-            mostrarLabelExplicacao = false;
-            mostrarBotaoFechar = false;
+            mostrarExplicacao = false;
             botaoComoFunciona.setEnabled(true);
+        }
+
+        if (botaoLimpar.isMousePressed()) {
+            //botaoLimpar.setEnabled(false);
+            limpar();
+            //botaoLimpar.setEnabled(true);
         }
     }
 
@@ -128,13 +139,14 @@ public class Pilha extends EngineFrame {
 
         clearBackground(WHITE);
 
-        for (GuiComponent g : guiComponentes) {
-            g.draw();
+        for (GuiComponent b : listaBotoes) {
+            b.draw();
         }
 
-        drawRectangle(140, 160, 144, 340, BLACK);
+        drawRectangle(140, 120, 144, 400, BLACK);
 
         if (mostrarAvisoLimite) {
+            fillRectangle(0, 0, 800, 620, corFundoEscurecido);
             fillRectangle(225, 140, 355, 40, GRAY);
             fillRectangle(220, 135, 355, 40, WHITE);
             drawRectangle(220, 135, 355, 40, BLACK);
@@ -142,26 +154,27 @@ public class Pilha extends EngineFrame {
         }
 
         if (mostrarAvisoVazio) {
+            fillRectangle(0, 0, 800, 620, corFundoEscurecido);
             fillRectangle(267, 140, 272, 40, GRAY);
             fillRectangle(262, 135, 272, 40, WHITE);
             drawRectangle(262, 135, 272, 40, BLACK);
             drawText("A PILHA ESTÁ VAZIA!", 267, 150, 24, BLACK);
         }
 
-        if (mostrarLabelExplicacao) {
+        if (mostrarExplicacao) {
+            fillRectangle(0, 0, 800, 620, corFundoEscurecido);
             fillRectangle(225, 185, 340, 300, GRAY);
             fillRectangle(220, 180, 340, 300, WHITE);
             drawRectangle(220, 180, 340, 300, BLACK);
-
             drawText(
                     """
-                A pilha é uma estrutura de 
+                A pilha  é uma  estrutura de 
                 dados onde o último elemento 
                 a entrar é sempre o primeiro 
-                a sair. Esse comportamento 
+                a sair.  Esse  comportamento 
                 é chamado de "Last In, First
-                Out" (LIFO), em português: 
-                Último a entrar, primeiro
+                Out"  (LIFO),  em português: 
+                Último  a  entrar,  primeiro
                 a sair.
                 """,
                     235,
@@ -173,6 +186,10 @@ public class Pilha extends EngineFrame {
             botaoFecharExplicacao.draw();
 
         }
+        
+
+        drawText(strTamanho, 585, 100, 20, BLACK);
+
     }
 
     private void pop() {
@@ -182,7 +199,7 @@ public class Pilha extends EngineFrame {
             return;
         }
 
-        labelTamanho.setText("Tamanho: " + String.valueOf(--tamanho));
+        strTamanho = "Tamanho: " + --tamanho;
     }
 
     private void push() {
@@ -192,8 +209,14 @@ public class Pilha extends EngineFrame {
             return;
         }
 
-        labelTamanho.setText("Tamnaho: " + String.valueOf(++tamanho));
+        strTamanho = "Tamanho: " + ++tamanho;
 
+    }
+
+    private void limpar() {
+        while (tamanho > 0) {
+            pop();
+        }
     }
 
     public static void main(String[] args) {
