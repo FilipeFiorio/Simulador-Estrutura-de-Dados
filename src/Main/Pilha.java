@@ -6,6 +6,7 @@ import br.com.davidbuzatto.jsge.imgui.GuiComponent;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Modelo de projeto básico da JSGE.
@@ -35,6 +36,8 @@ public class Pilha extends EngineFrame {
     private Color corFundoEscurecido;
 
     private List<GuiComponent> listaBotoes;
+    private List<Peca> pecas;
+    private List<Operacao> chamadasMetodos;
 
     public Pilha() {
 
@@ -59,6 +62,8 @@ public class Pilha extends EngineFrame {
         useAsDependencyForIMGUI();
 
         listaBotoes = new ArrayList<>();
+        pecas = new ArrayList<>();
+        chamadasMetodos = new ArrayList<>();
 
         botaoPush = new GuiButton(570, 200, 150, 40, "PUSH");
         botaoPop = new GuiButton(570, 250, 150, 40, "POP");
@@ -80,12 +85,12 @@ public class Pilha extends EngineFrame {
     @Override
     public void update(double delta) {
 
-        for (GuiComponent b : listaBotoes) {
-            b.update(delta);
-            b.setTextColor(WHITE);
-            b.setBackgroundColor(new Color(0, 128, 0));
+            for (GuiComponent b : listaBotoes) {
+                b.update(delta);
+                b.setTextColor(WHITE);
+                b.setBackgroundColor(new Color(0, 128, 0));
 
-        }
+            }
 
         botaoFecharExplicacao.update(delta);
         botaoFecharExplicacao.setBackgroundColor(new Color(0, 128, 0));
@@ -128,9 +133,36 @@ public class Pilha extends EngineFrame {
         }
 
         if (botaoLimpar.isMousePressed()) {
-            //botaoLimpar.setEnabled(false);
+            botaoLimpar.setEnabled(false);
             limpar();
-            //botaoLimpar.setEnabled(true);
+            botaoLimpar.setEnabled(true);
+        }
+
+        if (botaoSimulacaoRapida.isMousePressed()) {
+            for(GuiComponent b : listaBotoes) {
+                b.setEnabled(false);
+            }
+            limpar();
+            simulacaoRapida();
+        }
+
+        if (!chamadasMetodos.isEmpty()) {
+            timer += delta;
+            if (timer >= tempoMax / 2.0) {
+                Operacao o = chamadasMetodos.remove(0);
+                if (o == Operacao.PUSH) {
+                    push();
+                } else {
+                    pop();
+                }
+                timer = 0.0;
+            }
+
+        } else {
+            timer = 0.0;
+            for(GuiComponent b : listaBotoes) {
+                b.setEnabled(true);
+            }
         }
     }
 
@@ -144,6 +176,11 @@ public class Pilha extends EngineFrame {
         }
 
         drawRectangle(140, 120, 144, 400, BLACK);
+
+        for (int i = 0; i < pecas.size(); i++) {
+            Peca p = pecas.get(i);
+            p.desenhar(this);
+        }
 
         if (mostrarAvisoLimite) {
             fillRectangle(0, 0, 800, 620, corFundoEscurecido);
@@ -186,7 +223,6 @@ public class Pilha extends EngineFrame {
             botaoFecharExplicacao.draw();
 
         }
-        
 
         drawText(strTamanho, 585, 100, 20, BLACK);
 
@@ -200,6 +236,7 @@ public class Pilha extends EngineFrame {
         }
 
         strTamanho = "Tamanho: " + --tamanho;
+        pecas.remove(pecas.size() - 1);
     }
 
     private void push() {
@@ -210,6 +247,7 @@ public class Pilha extends EngineFrame {
         }
 
         strTamanho = "Tamanho: " + ++tamanho;
+        pecas.add(new Peca(140, 520 - tamanho * 40, 144, 40, gerarCor(), gerarNumero()));
 
     }
 
@@ -219,9 +257,77 @@ public class Pilha extends EngineFrame {
         }
     }
 
+    private void simulacaoRapida() {
+        chamadasMetodos.clear();
+        Random r = new Random();
+
+        int paresPushPop = 10 + r.nextInt(10);
+
+        int pushRestantes = paresPushPop;
+        int popRestantes = paresPushPop;
+        int tamAtual = 0;
+
+        chamadasMetodos.add(Operacao.PUSH);
+        pushRestantes--;
+        tamAtual++;
+
+        while(pushRestantes > 0 || popRestantes > 0) {
+            boolean pushPermitido = pushRestantes > 0;
+            boolean popPermitido = popRestantes > 0 && tamAtual > 0;
+
+            if(pushPermitido && popPermitido) {
+                if(r.nextBoolean()) {
+                    chamadasMetodos.add(Operacao.PUSH);
+                    pushRestantes--;
+                    tamAtual++;
+                } else {
+                    chamadasMetodos.add(Operacao.POP);
+                    popRestantes--;
+                    tamAtual--;
+                }
+            } else if(pushPermitido) {
+                chamadasMetodos.add(Operacao.PUSH);
+                pushRestantes--;
+                tamAtual++;
+            } else if(popPermitido) {
+                chamadasMetodos.add(Operacao.POP);
+                popRestantes--;
+                tamAtual--;
+            }
+        }
+
+        if(chamadasMetodos.get(chamadasMetodos.size() - 1) != Operacao.POP) {
+            chamadasMetodos.set(chamadasMetodos.size() - 1, Operacao.POP);
+        }
+        
+    }
+
+    private Color gerarCor() {
+
+        Random r = new Random(tamanho * 1000);
+
+        int vermelho = r.nextInt(256);
+        int verde = r.nextInt(256);
+        int azul = r.nextInt(256);
+
+        return new Color(vermelho, verde, azul, 200);
+        
+    }
+
+    private int gerarNumero() {
+        Random r = new Random();
+
+        return r.nextInt(100);
+    }
+
     public static void main(String[] args) {
         new Pilha();
 
+    }
+
+    private enum Operacao {
+        PUSH,
+        POP
     }
 
 }
