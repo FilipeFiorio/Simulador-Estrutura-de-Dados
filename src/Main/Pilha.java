@@ -18,10 +18,15 @@ import java.util.Random;
 public class Pilha extends EngineFrame {
 
     private int tamanho = 0;
-    private String strTamanho = "Tamanho: " + tamanho;
     private final int LIMITE_PILHA = 10;
-    private double timer = 0.0;
+    
+    private String strTamanho = "Tamanho: " + tamanho;
+    
+    private double timerAviso = 0.0;
+    private double timerSimulacao = 0.0;
     private final double tempoMax = 1.0;
+    private final double tempoAnimacao = 0.5;
+    
     private boolean mostrarAvisoLimite = false;
     private boolean mostrarAvisoVazio = false;
     private boolean mostrarExplicacao = false;
@@ -38,6 +43,7 @@ public class Pilha extends EngineFrame {
     private List<GuiComponent> listaBotoes;
     private List<Peca> pecas;
     private List<Operacao> chamadasMetodos;
+    private List<PassoAnimacao> animacoes;
 
     public Pilha() {
 
@@ -64,6 +70,7 @@ public class Pilha extends EngineFrame {
         listaBotoes = new ArrayList<>();
         pecas = new ArrayList<>();
         chamadasMetodos = new ArrayList<>();
+        animacoes =  new ArrayList<>();
 
         botaoPush = new GuiButton(570, 200, 150, 40, "PUSH");
         botaoPop = new GuiButton(570, 250, 150, 40, "POP");
@@ -85,12 +92,12 @@ public class Pilha extends EngineFrame {
     @Override
     public void update(double delta) {
 
-            for (GuiComponent b : listaBotoes) {
-                b.update(delta);
-                b.setTextColor(WHITE);
-                b.setBackgroundColor(new Color(0, 128, 0));
+        for (GuiComponent b : listaBotoes) {
+            b.update(delta);
+            b.setTextColor(WHITE);
+            b.setBackgroundColor(new Color(0, 128, 0));
 
-            }
+        }
 
         botaoFecharExplicacao.update(delta);
         botaoFecharExplicacao.setBackgroundColor(new Color(0, 128, 0));
@@ -106,8 +113,8 @@ public class Pilha extends EngineFrame {
 
         if (mostrarAvisoLimite) {
             botaoPush.setEnabled(false);
-            timer += delta;
-            if (timer >= tempoMax) {
+            timerAviso += delta;
+            if (timerAviso >= tempoMax) {
                 mostrarAvisoLimite = false;
                 botaoPush.setEnabled(true);
             }
@@ -115,8 +122,8 @@ public class Pilha extends EngineFrame {
 
         if (mostrarAvisoVazio) {
             botaoPop.setEnabled(false);
-            timer += delta;
-            if (timer >= tempoMax) {
+            timerAviso += delta;
+            if (timerAviso >= tempoMax) {
                 mostrarAvisoVazio = false;
                 botaoPop.setEnabled(true);
             }
@@ -139,7 +146,7 @@ public class Pilha extends EngineFrame {
         }
 
         if (botaoSimulacaoRapida.isMousePressed()) {
-            for(GuiComponent b : listaBotoes) {
+            for (GuiComponent b : listaBotoes) {
                 b.setEnabled(false);
             }
             limpar();
@@ -147,23 +154,41 @@ public class Pilha extends EngineFrame {
         }
 
         if (!chamadasMetodos.isEmpty()) {
-            timer += delta;
-            if (timer >= tempoMax / 2.0) {
+            timerSimulacao += delta;
+            if (timerSimulacao >= tempoMax) {
                 Operacao o = chamadasMetodos.remove(0);
                 if (o == Operacao.PUSH) {
                     push();
                 } else {
                     pop();
                 }
-                timer = 0.0;
+                timerSimulacao = 0.0;
             }
 
         } else {
-            timer = 0.0;
-            for(GuiComponent b : listaBotoes) {
+            timerSimulacao = 0.0;
+            for (GuiComponent b : listaBotoes) {
                 b.setEnabled(true);
             }
         }
+
+        for (int i = 0; i < animacoes.size(); i++) {
+            
+            botaoPop.setEnabled(false);
+            botaoPush.setEnabled(false);
+            
+            PassoAnimacao passoAnimacao = animacoes.get(i);
+            passoAnimacao.atualizar(delta);
+
+            if (passoAnimacao.isFinalizada()) {
+                if (pecas.contains(passoAnimacao.getPeca()) && passoAnimacao.getPeca().getyIni() == 50) {
+                    pecas.remove(passoAnimacao.getPeca());
+                }
+                animacoes.remove(i);
+                i--;
+            }
+        }
+
     }
 
     @Override
@@ -226,28 +251,44 @@ public class Pilha extends EngineFrame {
 
         drawText(strTamanho, 585, 100, 20, BLACK);
 
+        if (tamanho > 0) {
+            drawText("Topo ->", 80, 540 - tamanho * 40, 14, BLACK);
+        }
+
     }
 
     private void pop() {
         if (tamanho < 1) {
             mostrarAvisoVazio = true;
-            timer = 0.0;
+            timerAviso = 0.0;
             return;
         }
+        
+        double yAtual = 520 - tamanho * 40;
 
         strTamanho = "Tamanho: " + --tamanho;
-        pecas.remove(pecas.size() - 1);
+        
+        Peca pRemovida = pecas.get(pecas.size() - 1);
+        
+        animacoes.add(new PassoAnimacao(pRemovida, 140, yAtual , 140,  50, tempoAnimacao));
+        
     }
 
     private void push() {
         if (tamanho >= LIMITE_PILHA) {
             mostrarAvisoLimite = true;
-            timer = 0.0;
+            timerAviso = 0.0;
             return;
         }
 
         strTamanho = "Tamanho: " + ++tamanho;
-        pecas.add(new Peca(140, 520 - tamanho * 40, 144, 40, gerarCor(), gerarNumero()));
+        
+        double yDestino = 520 - tamanho * 40;
+        
+        Peca pAcionada = new Peca(140, 50, 144, 40, gerarCor(), gerarNumero());
+        pecas.add(pAcionada);
+        
+        animacoes.add(new PassoAnimacao(pAcionada, 140, 50, 140, yDestino, tempoAnimacao));
 
     }
 
@@ -271,12 +312,12 @@ public class Pilha extends EngineFrame {
         pushRestantes--;
         tamAtual++;
 
-        while(pushRestantes > 0 || popRestantes > 0) {
+        while (pushRestantes > 0 || popRestantes > 0) {
             boolean pushPermitido = pushRestantes > 0;
             boolean popPermitido = popRestantes > 0 && tamAtual > 0;
-
-            if(pushPermitido && popPermitido) {
-                if(r.nextBoolean()) {
+            
+            if (pushPermitido && popPermitido) {
+                if (r.nextBoolean()) {
                     chamadasMetodos.add(Operacao.PUSH);
                     pushRestantes--;
                     tamAtual++;
@@ -285,21 +326,21 @@ public class Pilha extends EngineFrame {
                     popRestantes--;
                     tamAtual--;
                 }
-            } else if(pushPermitido) {
+            } else if (pushPermitido) {
                 chamadasMetodos.add(Operacao.PUSH);
                 pushRestantes--;
                 tamAtual++;
-            } else if(popPermitido) {
+            } else if (popPermitido) {
                 chamadasMetodos.add(Operacao.POP);
                 popRestantes--;
                 tamAtual--;
             }
         }
 
-        if(chamadasMetodos.get(chamadasMetodos.size() - 1) != Operacao.POP) {
+        if (chamadasMetodos.get(chamadasMetodos.size() - 1) != Operacao.POP) {
             chamadasMetodos.set(chamadasMetodos.size() - 1, Operacao.POP);
         }
-        
+
     }
 
     private Color gerarCor() {
@@ -311,7 +352,7 @@ public class Pilha extends EngineFrame {
         int azul = r.nextInt(256);
 
         return new Color(vermelho, verde, azul, 200);
-        
+
     }
 
     private int gerarNumero() {

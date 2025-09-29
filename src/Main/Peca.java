@@ -36,7 +36,7 @@ public class Peca {
         return xIni;
     }
 
-    public void setxIni(int xIni) {
+    public void setxIni(double xIni) {
         this.xIni = xIni;
     }
 
@@ -44,7 +44,7 @@ public class Peca {
         return yIni;
     }
 
-    public void setyIni(int yIni) {
+    public void setyIni(double yIni) {
         this.yIni = yIni;
     }
 
