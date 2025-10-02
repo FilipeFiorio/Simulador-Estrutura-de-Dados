@@ -6,6 +6,7 @@ import br.com.davidbuzatto.jsge.imgui.GuiComponent;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Modelo de projeto básico da JSGE.
@@ -16,11 +17,16 @@ import java.util.List;
  */
 public class Fila extends EngineFrame {
 
-    private int tamanho;
-    private String strTamanho = "Tamanho: " + tamanho;
+    private int tamanho = 0;
+    private int contadorAcoes = 0;
     private final int LIMITE_FILA = 10;
-    private double timer = 0.0;
-    private double tempoMax = 1.0;
+    
+    private String strTamanho = "Tamanho: " + tamanho;
+    
+    private double timerAviso = 0.0;
+    private double timerSimulacao = 0.0;
+    private final double tempoMax = 1.0;
+    private final double tempoAnimacao = 0.5;
 
     private boolean mostrarAvisoLimite = false;
     private boolean mostrarAvisoVazio = false;
@@ -33,9 +39,13 @@ public class Fila extends EngineFrame {
     private GuiButton botaoComoFunciona;
     private GuiButton botaoFecharExplicacao;
     
-    private Color corFundoEscurecido;
+    private final Color corFundoEscurecido = new Color(40, 40, 40, 40);
+    private final Color corBotao = new Color(0, 128, 0);
 
     private List<GuiComponent> listaBotoes;
+    private List<Peca> pecas;
+    private List<String> chamadasMetodos;
+    private List<PassoAnimacao> animacoes;
 
     public Fila() {
 
@@ -60,15 +70,16 @@ public class Fila extends EngineFrame {
         useAsDependencyForIMGUI();
 
         listaBotoes = new ArrayList<>();
+        pecas = new ArrayList<>();
+        chamadasMetodos = new ArrayList<>();
+        animacoes = new ArrayList<>();
 
-        botaoEnqueue = new GuiButton(570, 200, 150, 40, "ENQUEUE");
-        botaoDequeue = new GuiButton(570, 250, 150, 40, "DEQUEUE");
-        botaoLimpar = new GuiButton(570, 300, 150, 40, "LIMPAR");
-        botaoSimulacaoRapida = new GuiButton(570, 350, 150, 40, "SIMULAÇÃO RÁPIDA");
-        botaoComoFunciona = new GuiButton(570, 400, 150, 40, "COMO FUNCIONA?");
+        botaoEnqueue = new GuiButton(160, 420, 150, 40, "ENQUEUE");
+        botaoDequeue = new GuiButton(320, 420, 150, 40, "DEQUEUE");
+        botaoLimpar = new GuiButton(480, 420, 150, 40, "LIMPAR");
+        botaoSimulacaoRapida = new GuiButton(245, 470, 150, 40, "SIMULAÇÃO RÁPIDA");
+        botaoComoFunciona = new GuiButton(405, 470, 150, 40, "COMO FUNCIONA?");
         botaoFecharExplicacao = new GuiButton(345, 420, 100, 40, "FECHAR");
-        
-        corFundoEscurecido = new Color(40, 40, 40, 40);
 
         listaBotoes.add(botaoEnqueue);
         listaBotoes.add(botaoDequeue);
@@ -83,12 +94,12 @@ public class Fila extends EngineFrame {
 
         for (GuiComponent b : listaBotoes) {
             b.update(delta);
-            b.setBackgroundColor(new Color(0, 128, 0));
+            b.setBackgroundColor(corBotao);
             b.setTextColor(WHITE);
         }
         
         botaoFecharExplicacao.update(delta);
-        botaoFecharExplicacao.setBackgroundColor(new Color(0, 128, 0));
+        botaoFecharExplicacao.setBackgroundColor(corBotao);
         botaoFecharExplicacao.setTextColor(WHITE);
 
         if (botaoEnqueue.isMousePressed()) {
@@ -103,10 +114,18 @@ public class Fila extends EngineFrame {
             limpar();
         }
         
+        if (botaoSimulacaoRapida.isMousePressed()) {
+            for (GuiComponent b : listaBotoes) {
+                b.setEnabled(false);
+            }
+            limpar();
+            simulacaoRapida();
+        }
+        
         if (mostrarAvisoLimite) {
             botaoEnqueue.setEnabled(false);
-            timer += delta;
-            if (timer >= tempoMax) {
+            timerAviso  += delta;
+            if (timerAviso  >= tempoMax) {
                 mostrarAvisoLimite = false;
                 botaoEnqueue.setEnabled(true);
             }
@@ -114,21 +133,63 @@ public class Fila extends EngineFrame {
 
         if (mostrarAvisoVazio) {
             botaoDequeue.setEnabled(false);
-            timer += delta;
-            if (timer >= tempoMax) {
+            timerAviso  += delta;
+            if (timerAviso  >= tempoMax) {
                 mostrarAvisoVazio = false;
                 botaoDequeue.setEnabled(true);
             }
         }
 
         if (botaoComoFunciona.isMousePressed()) {
-            botaoComoFunciona.setEnabled(false);
             mostrarExplicacao = true;
+            for(GuiComponent botoes : listaBotoes) {
+                botoes.setEnabled(false);
+            }
         }
 
         if (botaoFecharExplicacao.isMousePressed()) {
             mostrarExplicacao = false;
-            botaoComoFunciona.setEnabled(true);
+           
+            for(GuiComponent botoes : listaBotoes) {
+                botoes.setEnabled(true);
+            }
+            
+        }
+        
+        if (!chamadasMetodos.isEmpty()) {
+            timerSimulacao += delta;
+            if (timerSimulacao >= tempoMax) {
+                String string = chamadasMetodos.remove(0);
+                if ("ENQUEUE".equals(string)) {
+                    enqueue();
+                } else {
+                    dequeue();
+                }
+                timerSimulacao = 0.0;
+            }
+        }
+
+        if (chamadasMetodos.isEmpty() && !listaBotoes.get(0).isEnabled() && !mostrarExplicacao) {
+            for (GuiComponent b : listaBotoes) {
+                b.setEnabled(true);
+            }
+        }
+        
+        for (int i = 0; i < animacoes.size(); i++) {
+            
+            botaoDequeue.setEnabled(false);
+            botaoEnqueue.setEnabled(false);
+            
+            PassoAnimacao passoAnimacao = animacoes.get(i);
+            passoAnimacao.atualizar(delta);
+
+            if (passoAnimacao.isFinalizada()) {
+                if (pecas.contains(passoAnimacao.getPeca()) && passoAnimacao.getPeca().getxIni() == 60) {
+                    pecas.remove(passoAnimacao.getPeca());
+                }
+                animacoes.remove(i);
+                i--;
+            }
         }
         
     }
@@ -137,19 +198,29 @@ public class Fila extends EngineFrame {
     public void draw() {
 
         clearBackground(WHITE);
+        
+        setFontName(FONT_SANS_SERIF);
+        setFontStyle(FONT_BOLD);
 
+        drawText(strTamanho, 585, 100, 20, BLACK);
+        
         for (GuiComponent b : listaBotoes) {
             b.draw();
         }
 
-        drawRectangle(80, 240, 400, 144, BLACK);
+        drawRectangle(200, 200, 400, 144, BLACK);
+        
+        for (int i = 0; i < pecas.size(); i++) {
+            Peca p = pecas.get(i);
+            p.desenhar(this);
+        }
         
         if (mostrarAvisoLimite) {
             fillRectangle(0, 0, 800, 620, corFundoEscurecido);
-            fillRectangle(225, 140, 355, 40, GRAY);
-            fillRectangle(220, 135, 355, 40, WHITE);
-            drawRectangle(220, 135, 355, 40, BLACK);
-            drawText("LIMITE DA FILA EXCEDIDO!", 225, 150, 24, BLACK);
+            fillRectangle(220, 140, 367, 40, GRAY);
+            fillRectangle(215, 135, 367, 40, WHITE);
+            drawRectangle(215, 135, 367, 40, BLACK);
+            drawText("LIMITE DA FILA EXCEDIDO!", 220, 150, 24, BLACK);
         }
 
         if (mostrarAvisoVazio) {
@@ -157,7 +228,7 @@ public class Fila extends EngineFrame {
             fillRectangle(267, 140, 272, 40, GRAY);
             fillRectangle(262, 135, 272, 40, WHITE);
             drawRectangle(262, 135, 272, 40, BLACK);
-            drawText("A FILA ESTÁ VAZIA!", 267, 150, 24, BLACK);
+            drawText("A FILA ESTÁ VAZIA!", 268, 150, 24, BLACK);
         }
 
         if (mostrarExplicacao) {
@@ -187,40 +258,131 @@ public class Fila extends EngineFrame {
 
         }
         
-        drawText(strTamanho, 585, 100, 20, BLACK);
+        System.out.println(measureText("LIMITE DA FILA EXCEDIDO!", 24));
+        
+        if(tamanho > 0) {
+            drawText("↑Início", 200, 360, 12, BLACK);
+            drawText("↓Final", 160 + tamanho * 40, 184, 12, BLACK);
+        }
+        
         
     }
     
     private void enqueue() {
         if(tamanho >= LIMITE_FILA) {
             mostrarAvisoLimite = true;
-            timer = 0.0;
+            timerAviso  = 0.0;
             return;
         }
         
+        contadorAcoes++;
+        
         strTamanho = "Tamanho: " + ++tamanho;
         
+        double xDestino = 160 + tamanho * 40;
+        
+        Peca pAdiociona = new Peca(700, 200, 40, 144, gerarCor(), gerarNumero() );
+        pecas.add(pAdiociona);
+        
+        PassoAnimacao animacaoAdicionar = new PassoAnimacao(pAdiociona, 700, 200, xDestino, 200, tempoMax);
+        animacoes.add(animacaoAdicionar);
+                
     }
 
     private void dequeue() {
         if(tamanho < 1) {
             mostrarAvisoVazio = true;
-            timer = 0.0;
+            timerAviso  = 0.0;
             return;
         }
         
+        contadorAcoes++;
+        
         strTamanho = "Tamanho: " + --tamanho;
-    
+        
+        Peca pRemovida = pecas.get(0);
+        
+        PassoAnimacao animacaoRomever = new PassoAnimacao(pRemovida, 200, 200 , 60,  200, tempoAnimacao);
+        animacoes.add(animacaoRomever);
+        
+        for(int i = 1; i < pecas.size(); i++) {
+            Peca pMover = pecas.get(i);
+            
+            PassoAnimacao animacaoMover = new PassoAnimacao(pMover, pMover.getxIni(), 200, pMover.getxIni() - 40, 200, tempoAnimacao / 2);
+            animacoes.add(animacaoMover);
+            
+        }
+        
     }
     
     private void limpar() {
-        while(tamanho > 0) {
-            dequeue();
+        contadorAcoes %= 10;
+        animacoes.clear();
+        pecas.clear();
+        tamanho = 0;
+        strTamanho = "Tamanho: " + tamanho;
+    }
+        private void simulacaoRapida() {
+        chamadasMetodos.clear();
+        Random r = new Random();
+
+        int paresEnqueueDequeue = 10 + r.nextInt(10);
+
+        int enqueueRestantes = paresEnqueueDequeue;
+        int dequeueRestantes = paresEnqueueDequeue;
+        int tamAtual = 0;
+
+        chamadasMetodos.add("ENQUEUE");
+        enqueueRestantes--;
+        tamAtual++;
+
+        while (enqueueRestantes > 0 || dequeueRestantes > 0) {
+            boolean pushPermitido = enqueueRestantes > 0;
+            boolean popPermitido = dequeueRestantes > 0 && tamAtual > 0;
+            
+            if (pushPermitido && popPermitido) {
+                if (r.nextBoolean()) {
+                    chamadasMetodos.add("ENQUEUE");
+                    enqueueRestantes--;
+                    tamAtual++;
+                } else {
+                    chamadasMetodos.add("DEQUEUE");
+                    dequeueRestantes--;
+                    tamAtual--;
+                }
+            } else if (pushPermitido) {
+                chamadasMetodos.add("ENQUEUE");
+                enqueueRestantes--;
+                tamAtual++;
+            } else if (popPermitido) {
+                chamadasMetodos.add("DEQUEUE");
+                dequeueRestantes--;
+                tamAtual--;
+            }
         }
+
+        if (!"DEQUEUE".equals(chamadasMetodos.get(chamadasMetodos.size() - 1))) {
+            chamadasMetodos.set(chamadasMetodos.size() - 1, "DEQUEUE");
+        }
+
     }
 
     public static void main(String[] args) {
         new Fila();
+    }
+    
+    private Color gerarCor() {
+        
+        double matiz = contadorAcoes * 0.618; 
+    
+        return Color.getHSBColor((float) matiz, 1, 1);
+
+    }
+
+    private int gerarNumero() {
+        Random r = new Random();
+
+        return r.nextInt(100);
     }
 
 }
