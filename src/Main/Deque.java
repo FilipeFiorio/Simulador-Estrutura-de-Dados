@@ -292,8 +292,6 @@ public class Deque extends EngineFrame {
 
         }
         
-        System.out.println(measureText("LIMITE DO DEQUE !", 24));
-
         if (tamanho > 0) {
             drawText("↑Início", 200, 360, 12, BLACK);
             drawText("↓Final", 160 + tamanho * 40, 184, 12, BLACK);
