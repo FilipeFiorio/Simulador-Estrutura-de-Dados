@@ -281,6 +281,9 @@ public class Lista extends EngineFrame {
         }
 
         drawRectangle(200, 200, 400, 144, BLACK);
+        for (int i = 0; i < 10; i++) {
+            drawText(String.valueOf(i), 217.5 + i * 40, 360, 12, BLACK);
+        }
 
         for (int i = 0; i < pecas.size(); i++) {
             Peca p = pecas.get(i);
@@ -338,9 +341,6 @@ public class Lista extends EngineFrame {
         
         System.out.println(measureText("LIMITE DA LISTA EXCEDIDO!", 24));
 
-        for (int i = 0; i < 10; i++) {
-            drawText(String.valueOf(i), 217.5 + i * 40, 360, 12, BLACK);
-        }
 
         entradaIndex.draw();
     }
